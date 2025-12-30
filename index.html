@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frame — Turn Your iPad Into a Photo Frame</title>
+    <meta name="description" content="Frame transforms your iPad into a beautiful digital photo frame. Display your memories in stunning quality.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-ink: #1a1a18;
+            --color-paper: #faf9f7;
+            --color-warm: #f5f3ef;
+            --color-accent: #c9a87c;
+            --color-muted: #8a8680;
+            --font-display: 'Cormorant Garamond', Georgia, serif;
+            --font-body: 'DM Sans', system-ui, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--color-paper);
+            color: var(--color-ink);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Frame border effect */
+        .page-frame {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .page-frame--top,
+        .page-frame--bottom {
+            left: 0;
+            right: 0;
+            height: 12px;
+            background: linear-gradient(to bottom, var(--color-ink) 0%, var(--color-ink) 2px, transparent 2px);
+        }
+
+        .page-frame--top { top: 0; }
+        .page-frame--bottom { 
+            bottom: 0; 
+            transform: rotate(180deg);
+        }
+
+        .page-frame--left,
+        .page-frame--right {
+            top: 0;
+            bottom: 0;
+            width: 12px;
+            background: linear-gradient(to right, var(--color-ink) 0%, var(--color-ink) 2px, transparent 2px);
+        }
+
+        .page-frame--left { left: 0; }
+        .page-frame--right { 
+            right: 0; 
+            transform: rotate(180deg);
+        }
+
+        .app-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 26.8%; /* iOS app icon radius */
+            margin-bottom: 32px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            opacity: 0;
+            animation: fadeUp 1s ease forwards;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 24px;
+            right: 32px;
+            z-index: 100;
+            display: flex;
+            gap: 32px;
+        }
+
+        nav a {
+            font-size: 13px;
+            text-decoration: none;
+            color: var(--color-ink);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        nav a:hover {
+            opacity: 1;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 80px 24px;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(201, 168, 124, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: clamp(4rem, 15vw, 10rem);
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            margin-bottom: 24px;
+            opacity: 0;
+            animation: fadeUp 1s ease forwards;
+        }
+
+        .tagline {
+            font-family: var(--font-display);
+            font-size: clamp(1.25rem, 3vw, 1.75rem);
+            font-weight: 400;
+            font-style: italic;
+            color: var(--color-muted);
+            max-width: 400px;
+            opacity: 0;
+            animation: fadeUp 1s ease 0.2s forwards;
+        }
+
+        .hero-cta {
+            margin-top: 48px;
+            opacity: 0;
+            animation: fadeUp 1s ease 0.4s forwards;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 32px;
+            background: var(--color-ink);
+            color: var(--color-paper);
+            text-decoration: none;
+            font-size: 14px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: var(--color-accent);
+            transform: translateY(-2px);
+        }
+
+        .btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            animation: fadeUp 1s ease 0.6s forwards;
+        }
+
+        .scroll-hint span {
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--color-muted);
+        }
+
+        .scroll-hint::after {
+            content: '';
+            width: 1px;
+            height: 40px;
+            background: var(--color-ink);
+            animation: scrollPulse 2s ease infinite;
+        }
+
+        /* Screenshots Gallery */
+        .gallery {
+            padding: 120px 24px;
+            background: var(--color-warm);
+        }
+
+        .gallery-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-label {
+            font-size: 12px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--color-muted);
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 400;
+        }
+
+        .screenshots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .screenshot {
+            position: relative;
+            aspect-ratio: 3.5/4;
+            background: var(--color-paper);
+            padding: 26px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .screenshot:hover {
+            transform: translateY(-8px) rotate(1deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .screenshot:nth-child(even):hover {
+            transform: translateY(-8px) rotate(-1deg);
+        }
+
+        .screenshot-inner {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #e8e6e1 0%, #d4d2cd 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-muted);
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screenshot-inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .screenshot-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .screenshot-placeholder svg {
+            width: 48px;
+            height: 48px;
+            opacity: 0.4;
+        }
+
+        /* Features */
+        .features {
+            padding: 120px 24px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .features-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .feature-list {
+            display: grid;
+            gap: 64px;
+        }
+
+        .feature {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            border: 1px solid var(--color-ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feature-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .feature h3 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .feature p {
+            color: var(--color-muted);
+            max-width: 500px;
+        }
+
+        /* Support */
+        .support {
+            padding: 120px 24px;
+            background: var(--color-ink);
+            color: var(--color-paper);
+        }
+
+        .support-inner {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .support-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .support .section-label {
+            color: var(--color-accent);
+        }
+
+        .support .section-title {
+            color: var(--color-paper);
+        }
+
+        .faq-item {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 32px 0;
+        }
+
+        .faq-question {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-question::after {
+            content: '+';
+            font-size: 1.5rem;
+            font-weight: 300;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-question::after {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            color: rgba(255, 255, 255, 0.6);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+        }
+
+        .contact-box {
+            margin-top: 64px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .contact-box h3 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+
+        .contact-box p {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 24px;
+        }
+
+        .contact-box a {
+            color: var(--color-accent);
+            text-decoration: none;
+            border-bottom: 1px solid var(--color-accent);
+            transition: opacity 0.3s ease;
+        }
+
+        .contact-box a:hover {
+            opacity: 0.7;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 24px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--color-muted);
+        }
+
+        footer a {
+            color: var(--color-ink);
+            text-decoration: none;
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scrollPulse {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scaleY(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scaleY(1.2);
+            }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                top: 16px;
+                right: 16px;
+                gap: 20px;
+            }
+
+            nav a {
+                font-size: 11px;
+            }
+
+            .feature {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .feature-icon {
+                width: 60px;
+                height: 60px;
+            }
+
+            .page-frame--top,
+            .page-frame--bottom {
+                height: 8px;
+            }
+
+            .page-frame--left,
+            .page-frame--right {
+                width: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page frame borders -->
+    <div class="page-frame page-frame--top"></div>
+    <div class="page-frame page-frame--bottom"></div>
+    <div class="page-frame page-frame--left"></div>
+    <div class="page-frame page-frame--right"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#gallery">Gallery</a>
+        <a href="#features">Features</a>
+        <a href="#support">Support</a>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <img src="images/frame.png" alt="Frame app icon" class="app-icon">
+
+        <h1 class="logo">Frame</h1>
+        <p class="tagline">Transform your iPad into a beautiful photo frame</p>
+        <!--
+        <div class="hero-cta">
+            <a href="#" class="btn">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                </svg>
+                Download on App Store
+            </a>
+        </div>
+        -->
+        <div class="scroll-hint">
+            <span>Explore</span>
+        </div>
+    </section>
+
+    <!-- Screenshots Gallery -->
+    <section class="gallery" id="gallery">
+        <div class="gallery-header reveal">
+            <p class="section-label">Screenshots</p>
+            <h2 class="section-title">See Frame in Action</h2>
+        </div>
+        <div class="screenshots">
+            <div class="screenshot reveal">
+                <div class="screenshot-inner">
+                    <img src="images/ipads.png" alt="Frame screenshot">
+                </div>
+            </div>
+            <div class="screenshot reveal">
+                <div class="screenshot-inner">
+                    <img src="images/ipad2.png" alt="Frame screenshot">
+                </div>
+            </div>
+            <div class="screenshot reveal">
+                <div class="screenshot-inner">
+                    <img src="images/ipad3.png" alt="Frame screenshot">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+        <div class="features-header reveal">
+            <p class="section-label">Features</p>
+            <h2 class="section-title">Crafted for Your Memories</h2>
+        </div>
+        <div class="feature-list">
+            <div class="feature reveal">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="M3 9h18"/>
+                        <path d="M9 21V9"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3>Elegant Display Modes</h3>
+                    <p>Choose from multiple beautiful layouts to showcase your photos. From classic single-image display to dynamic slideshows that bring your gallery to life.</p>
+                </div>
+            </div>
+            <div class="feature reveal">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M20 7h-9"/>
+                        <path d="M14 17H5"/>
+                        <circle cx="17" cy="17" r="3"/>
+                        <circle cx="7" cy="7" r="3"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3>Seamless Transitions</h3>
+                    <p>Smooth, cinematic transitions between photos. Customize timing and effects to match your style.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support -->
+    <section class="support" id="support">
+        <div class="support-inner">
+            <div class="support-header reveal">
+                <p class="section-label">Support</p>
+                <h2 class="section-title">How Can We Help?</h2>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item reveal">
+                    <h3 class="faq-question">How do I connect my photos?</h3>
+                    <div class="faq-answer">
+                        <p>Frame connects directly to your iCloud Photo Library. Simply grant permission when prompted, and you'll be able to select any album or collection to display.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal">
+                    <h3 class="faq-question">Does Frame work in landscape and portrait?</h3>
+                    <div class="faq-answer">
+                        <p>Yes! Frame automatically adapts to however you position your iPad. Your photos will be beautifully displayed in any orientation.</p>
+                    </div>
+                </div>
+                <div class="faq-item reveal">
+                    <h3 class="faq-question">Will Frame drain my battery?</h3>
+                    <div class="faq-answer">
+                        <p>Frame is optimized for extended display. We recommend keeping your iPad plugged in for the best experience.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="contact-box reveal">
+                <h3>Still Have Questions?</h3>
+                <p>We're here to help you get the most out of Frame.</p>
+                <a href="mailto:support@example.com">support@example.com</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Frame. Made with care for your memories.</p>
+    </footer>
+
+    <script>
+        // Reveal on scroll
+        const reveals = document.querySelectorAll('.reveal');
+        
+        const revealOnScroll = () => {
+            reveals.forEach(el => {
+                const top = el.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (top < windowHeight - 100) {
+                    el.classList.add('visible');
+                }
+            });
+        };
+
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll(); // Check on load
+
+        // FAQ accordion
+        const faqItems = document.querySelectorAll('.faq-item');
+        
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                
+                // Close all
+                faqItems.forEach(i => i.classList.remove('active'));
+                
+                // Open clicked if it wasn't active
+                if (!isActive) {
+                    item.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
