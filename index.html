@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Frame — Turn Your iPad Into a Photo Frame</title>
-    <meta name="description" content="Frame transforms your iPad into a beautiful digital photo frame. Display your memories in stunning quality.">
+    <title>Frame — Turn Your iPhone or iPad Into a Photo Frame</title>
+    <meta name="description" content="Frame turns your iPhone, iPad or iPhone Duo into a beautiful digital photo frame. Your photos, framed like fine art.">
+    <link rel="icon" type="image/png" href="images/icon.png">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -100,6 +102,7 @@
             text-transform: uppercase;
             opacity: 0.7;
             transition: opacity 0.3s ease;
+            white-space: nowrap;
         }
 
         nav a:hover {
@@ -291,6 +294,56 @@
             width: 48px;
             height: 48px;
             opacity: 0.4;
+        }
+
+        /* iPhone Duo */
+        .duo {
+            padding: 120px 24px;
+        }
+
+        .duo-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .duo-intro {
+            text-align: center;
+            color: var(--color-muted);
+            max-width: 560px;
+            margin: 0 auto 80px;
+        }
+
+        .duo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 80px 48px;
+            max-width: 1100px;
+            margin: 0 auto;
+            align-items: end;
+        }
+
+        .duo-shot {
+            text-align: center;
+        }
+
+        .duo-shot img {
+            width: 100%;
+            max-height: 460px;
+            object-fit: contain;
+            filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.12));
+        }
+
+        .duo-shot h3 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin: 24px 0 8px;
+        }
+
+        .duo-shot p {
+            color: var(--color-muted);
+            max-width: 400px;
+            margin: 0 auto;
         }
 
         /* Features */
@@ -485,8 +538,11 @@
         @media (max-width: 768px) {
             nav {
                 top: 16px;
+                left: 16px;
                 right: 16px;
-                gap: 20px;
+                gap: 16px;
+                justify-content: flex-end;
+                flex-wrap: wrap;
             }
 
             nav a {
@@ -496,6 +552,11 @@
             .feature {
                 grid-template-columns: 1fr;
                 gap: 16px;
+            }
+
+            .duo-grid {
+                grid-template-columns: 1fr;
+                gap: 64px;
             }
 
             .feature-icon {
@@ -525,16 +586,17 @@
     <!-- Navigation -->
     <nav>
         <a href="#gallery">Gallery</a>
+        <a href="#duo">iPhone Duo</a>
         <a href="#features">Features</a>
         <a href="#support">Support</a>
     </nav>
 
     <!-- Hero -->
     <section class="hero">
-        <img src="images/frame.png" alt="Frame app icon" class="app-icon">
+        <img src="images/icon.png" alt="Frame app icon" class="app-icon">
 
         <h1 class="logo">Frame</h1>
-        <p class="tagline">Transform your iPad into a beautiful photo frame</p>
+        <p class="tagline">Turn your iPhone or iPad into a beautiful photo frame</p>
         <!--
         <div class="hero-cta">
             <a href="#" class="btn">
@@ -575,6 +637,37 @@
         </div>
     </section>
 
+    <!-- iPhone Duo -->
+    <section class="duo" id="duo">
+        <div class="duo-header reveal">
+            <p class="section-label">iPhone Duo</p>
+            <h2 class="section-title">A Frame That Folds</h2>
+        </div>
+        <p class="duo-intro reveal">Frame follows the way you hold iPhone Duo. Stand it up, fold it like a laptop, or open it flat, and the frame changes to suit.</p>
+        <div class="duo-grid">
+            <figure class="duo-shot reveal">
+                <img src="images/duo/bookstand.png" alt="iPhone Duo standing like a book, showing two framed photos side by side">
+                <h3>Stand It Like a Book</h3>
+                <p>Each half becomes its own framed print. Two photos, side by side, on your shelf.</p>
+            </figure>
+            <figure class="duo-shot reveal">
+                <img src="images/duo/laptop.png" alt="iPhone Duo folded like a laptop, with the photo above and controls below">
+                <h3>Fold It Like a Laptop</h3>
+                <p>The upright half is the frame. The half on the table holds your slideshows and controls.</p>
+            </figure>
+            <figure class="duo-shot reveal">
+                <img src="images/duo/paired.png" alt="Two landscape photos stacked in one mat on a portrait screen">
+                <h3>Photos That Fit Together</h3>
+                <p>Photos that don't match the screen's orientation are paired in one mat, each cropped around its subject.</p>
+            </figure>
+            <figure class="duo-shot reveal">
+                <img src="images/duo/dock.png" alt="The slideshow dock over a framed landscape photo">
+                <h3>Switch in a Swipe</h3>
+                <p>Swipe up for your slideshows and change what's showing without leaving the frame.</p>
+            </figure>
+        </div>
+    </section>
+
     <!-- Features -->
     <section class="features" id="features">
         <div class="features-header reveal">
@@ -609,6 +702,31 @@
                     <p>Smooth, cinematic transitions between photos. Customize timing and effects to match your style.</p>
                 </div>
             </div>
+            <div class="feature reveal">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="2" y="2" width="20" height="20"/>
+                        <rect x="6" y="6" width="12" height="12"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3>A Frame for Every Slideshow</h3>
+                    <p>Single or double mats in classic colours, with a bevelled edge and paper texture. In Whole Photo mode the mat is cut to each photo's shape, just as a framer would. Captions from the Photos app sit on the mat like a gallery label.</p>
+                </div>
+            </div>
+            <div class="feature reveal">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="2" y="5" width="20" height="14"/>
+                        <rect x="5" y="8" width="6" height="8"/>
+                        <rect x="13" y="8" width="6" height="8"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3>Portrait and Landscape, Together</h3>
+                    <p>No more sea of empty mat. Pair portrait photos side by side on a landscape screen, or show only the photos that match how your device is held.</p>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -629,7 +747,7 @@
                 <div class="faq-item reveal">
                     <h3 class="faq-question">Does Frame work in landscape and portrait?</h3>
                     <div class="faq-answer">
-                        <p>Yes! Frame automatically adapts to however you position your iPad. Your photos will be beautifully displayed in any orientation.</p>
+                        <p>Yes. Frame adapts to however you hold your iPhone or iPad. For photos that don't match the screen, you choose: show them with the mat, pair two side by side, or skip them.</p>
                     </div>
                 </div>
                 <div class="faq-item reveal">
@@ -641,11 +759,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2025 Frame. Made with care for your memories.</p>
-    </footer>
 
     <script>
         // Reveal on scroll
@@ -694,7 +807,7 @@
         });
     </script>
     <footer>
-    <p>&copy; 2025 Frame. Made with care for your memories. · <a href="privacy.html">Privacy Policy</a></p>
+    <p>&copy; 2026 Frame. Made with care for your memories. · <a href="privacy.html">Privacy Policy</a></p>
 </footer>
 </body>
 </html>
